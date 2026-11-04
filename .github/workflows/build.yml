@@ -13,9 +13,10 @@ jobs:
         run: |
           unzip -q OptiMoto.zip
           cd OptiMoto
-          if ! gradle assembleDebug --console=plain > ../build.log 2>&1; then
-            echo "## ERRORES" >> $GITHUB_STEP_SUMMARY
-            grep -E '^e: |What went wrong|Could not|not found|FAILURE' -A4 ../build.log | head -70 >> $GITHUB_STEP_SUMMARY
+          gradle assembleDebug --console=plain --stacktrace 2>&1 | tee ../build.log || true
+          if ! ls app/build/outputs/apk/debug/*.apk; then
+            echo "=====ERRORES====="
+            grep -nE "^e: |error:|What went wrong|Could not|FAILED" -A6 ../build.log | head -80
             exit 1
           fi
       - uses: actions/upload-artifact@v4
